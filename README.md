@@ -72,7 +72,7 @@ console.log(this.error)
 
 规则Rules:
 
-```JSON
+```javascript
 {
     name: { // 观察者命名，结果会放在此名对象上
     	model: 'name',			// 绑定控件model
