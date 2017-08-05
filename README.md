@@ -4,9 +4,9 @@
 
 1. 引入插件：
 
-   ```
-   Vue.use(Validator);
-   ```
+```
+Vue.use(Validator);
+```
 
 2. 组件内例子：
 
@@ -30,7 +30,6 @@
             this.$validator(this.error, {
                 name: {
                     model: 'name',
-                    value: this.name,
                     isRequired: true,
                     regex: /^[A-Za-z]+$/,
                     max: 10,
@@ -44,13 +43,15 @@
 
 ## 说明
 
-在组件状态 `created` 下（组件还没有 `mounted`），可以监听首次差值，并验证。
+因为需要修改组件 `data` ，所以要在状态 `created` 下，否则页面内调用补充方法 `<span v-if="!error.name.isRequired">please input</span>` 会报错。
 
-如果不需要首次验证，可以放在 `mounted` 下。
+如果不需要页面内监听方法，则可以放置在 `mounted` 下。
 
-`this.$validator(ObserverObject,Rules)`
 
-需要在组件中绑定一个 `ObserverObject`，后续进行观察变动。比如例中，绑定在 `this.error` 中。
+
+`this.$validator(errorObject,Rules)`
+
+需要在组件中绑定一个 `errorObject`，后续通过此对象进行观察变动。比如例中，绑定在 `this.error` 中。
 
 ```javascript
 console.log(this.error)
@@ -76,8 +77,7 @@ console.log(this.error)
 {
     name: { // 观察者命名，结果会放在此名对象上
     	model: 'name',			// 绑定控件model
-    	value: this.name,		// 加载组件后即验证，必须传入当前值（加载后数据不验证，可不传）
-    	isRequired: true, 		// 必须输入
+    	isRequired: true, 		// 是否为必须选项
     	regex: /^[A-Za-z]+$/,	// 正则验证
       	fn:(val)=>{			    // 自定义验证，传入当前值，需要返回true/false
           return val!=='abc'
