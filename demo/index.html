@@ -31,8 +31,8 @@
             <span v-if="error.form" style="color: #c00">
                 <span v-if="!error.form.data.age.isRequired">please input</span>
                 <span v-if="error.form.data.age.isRequired && !error.form.data.age.length">length must to be 2</span>
-                <span v-if="error.form.data.age.length && !error.form.data.age.regex">regex illegal</span>
-                <span v-if="error.form.data.age.length && error.form.data.age.regex && !error.form.data.age.fn">fn illegal</span>
+                <span v-if="error.form.data.age.length && !error.form.data.age.regex">only number</span>
+                <span v-if="error.form.data.age.length && error.form.data.age.regex && !error.form.data.age.fn">number should less than 60</span>
             </span>
         </div>
         <div>
@@ -58,10 +58,11 @@
 <script>
   Vue.use(vueFormValidator)
 
-  var vm = new Vue({
+  window.vm = new Vue({
     name: 'FormValidator',
     data () {
       return {
+        error: {},
         form: {
           data: {
             name: 'Jason',
@@ -73,8 +74,7 @@
           user: '',
           addr: '',
           text: ''
-        },
-        error: {}
+        }
       }
     },
     methods: {
@@ -82,7 +82,7 @@
         this.form.valid = this.error.form.data.$valid
       }
     },
-    created(){
+    mounted(){
       var rules = [
         {
           model: 'form.data.name',
@@ -101,7 +101,7 @@
           length: 2
         }
       ]
-      this.$validator(this.error, rules)
+      this.$validate(rules, this.error)
 
       var rules2 = [
         {
@@ -117,11 +117,9 @@
           regex: /^[A-Za-z\d ]+$/
         }
       ]
-      this.$validator(this.error, rules2)
+      this.$validate(rules2)
     }
   }).$mount('#app')
-
-  window.vm = vm
 </script>
 </body>
 </html>

@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Validator from '../src/vue-form-validator'
 Vue.use(Validator)
 
-describe('validator-1', () => {
+describe('normal', () => {
   const rules = [
     {
       model: 'name',
@@ -28,7 +28,7 @@ describe('validator-1', () => {
       }
     },
     created(){
-      this.$validator(this.err, rules)
+      this.$validate(rules, this.err)
     }
   })
 
@@ -98,7 +98,7 @@ describe('validator-1', () => {
   })
 })
 
-describe('validator-2', () => {
+describe('form-in-object', () => {
   const rules = [
     {
       model: 'form.name',
@@ -118,7 +118,7 @@ describe('validator-2', () => {
       }
     },
     created(){
-      this.$validator(this.err, rules)
+      this.$validate(rules, this.err)
     }
   })
 
@@ -136,12 +136,14 @@ describe('validator-2', () => {
   })
 })
 
-describe('validator-3', () => {
+describe('rules-length', () => {
   const rules = [
     {
       model: 'form.name',
       isRequired: true,
-      length: 5
+      length: 5,
+      min: 10,
+      max: 20
     }
   ]
 
@@ -155,7 +157,7 @@ describe('validator-3', () => {
       }
     },
     created(){
-      this.$validator(this.err, rules)
+      this.$validate(rules, this.err)
     }
   })
 
@@ -174,7 +176,7 @@ describe('validator-3', () => {
   })
 })
 
-describe('validator-4', () => {
+describe('invalid-length', () => {
   const rules = [
     {
       model: 'form.age',
@@ -195,7 +197,7 @@ describe('validator-4', () => {
       }
     },
     created(){
-      this.$validator(this.err, rules)
+      this.$validate(rules, this.err)
     }
   })
 
@@ -214,7 +216,7 @@ describe('validator-4', () => {
   })
 })
 
-describe('validator-5', () => {
+describe('error-object-in-string', () => {
   const rules = [
     {
       model: 'form.age',
@@ -233,7 +235,7 @@ describe('validator-5', () => {
       }
     },
     created(){
-      this.$validator('err', rules)
+      this.$validate(rules, 'err')
     }
   })
 
@@ -247,6 +249,105 @@ describe('validator-5', () => {
       expect(vm.err.form.age.max).toBe(true)
       expect(vm.err.form.age.fn).toBe(true)
       expect(vm.err.form.age.$valid).toBe(true)
+      done()
+    }, 100)
+  })
+})
+
+describe('error-object-at-default', () => {
+  const rules = [
+    {
+      model: 'form.age',
+      isRequired: true,
+      regex: /^\d+$/
+    }
+  ]
+
+  const vm = new Vue({
+    data(){
+      return {
+        form: {
+          age: ''
+        }
+      }
+    },
+    created(){
+      this.$validate(rules)
+    }
+  })
+
+  test('age', done => {
+    vm.form.age = '200'
+    setTimeout(() => {
+      expect(vm.$validator.form.age.isRequired).toBe(true)
+      expect(vm.$validator.form.age.regex).toBe(true)
+      expect(vm.$validator.form.age.length).toBe(true)
+      expect(vm.$validator.form.age.min).toBe(true)
+      expect(vm.$validator.form.age.max).toBe(true)
+      expect(vm.$validator.form.age.fn).toBe(true)
+      expect(vm.$validator.form.age.$valid).toBe(true)
+      done()
+    }, 100)
+  })
+})
+
+describe('error-object-in-fail-object', () => {
+  const rules = [
+    {
+      model: 'form.age',
+      isRequired: true,
+      regex: /^\d+$/
+    }
+  ]
+
+  const vm = new Vue({
+    data(){
+      return {
+        form: {
+          age: ''
+        }
+      }
+    },
+    created(){
+      this.$validate(rules, this.asdf)
+    }
+  })
+
+  test('object', done => {
+    vm.form.age = '200'
+    setTimeout(() => {
+      expect(vm.$validator.form.age.isRequired).toBe(true)
+      done()
+    }, 100)
+  })
+})
+
+describe('error-object-in-unexist-string', () => {
+  const rules = [
+    {
+      model: 'form.age',
+      isRequired: true,
+      regex: /^\d+$/
+    }
+  ]
+
+  const vm = new Vue({
+    data(){
+      return {
+        form: {
+          age: ''
+        }
+      }
+    },
+    created(){
+      this.$validate(rules, 'asdf')
+    }
+  })
+
+  test('string', done => {
+    vm.form.age = '200'
+    setTimeout(() => {
+      expect(vm.asdf.form.age.isRequired).toBe(true)
       done()
     }, 100)
   })

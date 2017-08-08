@@ -14,19 +14,22 @@ const getValue = (obj, str) => {
 
 /**
  * 设置对象值
+ * @param vm
  * @param obj
  * @param str
  * @param value
  * @returns {*}
  */
-const setValue = (obj, str, value) => {
+const setValue = (vm, obj, str, value) => {
   let arr = str.split('.')
   let len = arr.length
   arr.reduce((val, n, idx) => {
     if (idx === len - 1) {
-      val[n] = value
+      vm.$set(val, n, value)
     } else {
-      val[n] = typeof val[n] === 'object' ? val[n] : {}
+      if (typeof val[n] !== 'object') {
+        vm.$set(val, n, {})
+      }
     }
     return val[n]
   }, obj)
@@ -54,7 +57,6 @@ const allCheck = (errorObject) => {
   }
   errorObject.$valid = flag
 }
-
 
 const checkValues = (options) => {
   let {opts, data, val, flag} = options
@@ -107,9 +109,17 @@ const checkValues = (options) => {
  * @param options
  */
 const check = (options) => {
-  let {model, val, errorObject, opts} = options
+  let {vm, model, val, errorObject, opts} = options
+
   let data = {}
-  setValue(errorObject, model, data)
+  setValue(vm, errorObject, model, data)
+  vm.$set(data, 'isRequired', true)
+  vm.$set(data, 'regex', true)
+  vm.$set(data, 'fn', true)
+  vm.$set(data, 'length', true)
+  vm.$set(data, 'min', true)
+  vm.$set(data, 'max', true)
+  vm.$set(data, '$valid', true)
 
   let flag = true
 
@@ -147,20 +157,29 @@ const check = (options) => {
 const Validator = {}
 
 Validator.install = Vue => {
-  Vue.prototype.$validator = function (errorObject, options) {
-    if (typeof errorObject === 'string') errorObject = getValue(this, errorObject)
+  Vue.prototype.$validate = function (options, errorObject) {
+    if (typeof errorObject === 'undefined') errorObject = '$validator'
 
-    if (!errorObject) throw new Error('[vue-form-validator] errorObject not exist.')
+    if (typeof errorObject === 'string') {
+      let newErrorObject = getValue(this, errorObject)
+      if (!newErrorObject) {
+        Vue.util.defineReactive(this, errorObject, {})
+        errorObject = this[errorObject]
+      } else {
+        errorObject = newErrorObject
+      }
+    }
+
     options.forEach(opts => {
       let model = opts.model
       if (!/^[A-Za-z_]+[A-Za-z\d_.$]+?$/.test(model)) return
 
       this.$watch(model, val => {
-        check({model, val, errorObject, opts})
+        check({vm: this, model, val, errorObject, opts})
       })
 
       let val = getValue(this, model)
-      check({model, val, errorObject, opts})
+      check({vm: this, model, val, errorObject, opts})
     })
   }
 }
